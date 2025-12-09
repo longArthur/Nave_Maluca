@@ -6,7 +6,7 @@ typedef struct{
     char nome[45];
     int pontos;
 }SCORE;
-
+//TODO: Test Highscore reading and writing, and fix for EOF.
 int read_highscore(char path[], int scores[MAXSCORES]){
     FILE *arq;
     int result_leitura, i; //variavel para verificar se leitura deu certo

@@ -1,17 +1,20 @@
 #include "raylib.h"
+#include "raymath.h"
 #include <stdio.h>
 #include "highscore.c"
 #include <math.h>
 #include "map.c"
 
+
 #define MOVSPEED 2.0f
-#define TAMNAVE 56
+#define TAMNAVE 40
+#define FPS 60
 
 /*
 Sprite: PosX, PosY, SizeX, Sizey
-Plane left:43, 74, 56, 56
-Plane regular:103, 70, 56, 56
-Plane right:163, 74, 56, 56
+Plane left:43, 74, 40, 40
+Plane regular:103, 70, 40, 40
+Plane right:163, 74, 40, 40
 
 */
 
@@ -41,28 +44,31 @@ int main(void){
         "TTTTTTTTT         TTTTTT",
         "TTTTTTTTTT   A  TTTTTTTT"
     };
+    Vector2 hasCollided;
     
     const int screenWidth = 960, screenHeight = 840;
     int vidas, combustivel, nivel, score, naveState = 1, sideMovement = 0, run=1;
     float correction;
     char curr_map[20][24];
+    loadMapTextFile("./Mapas/mapa03.txt", curr_map);
+    Vector2 naveVel = {0,0};
     
-    Vector2 navePos = { (float)screenWidth/2, (float)screenHeight/2 };
+    Vector2 navePos = ParseStartPoint(curr_map);
 
     Rectangle mapBounds = {0.0f, 40.0f, 960.0f, 840.0f};
     
     
     Rectangle naveSprite[] = {
-        { 43.0f, 74.0f, 56.0f, 56.0f },
-        { 103.0f, 70.0f, 56.0f, 56.0f },
-        { 163.0f, 74.0f, 56.0f, 56.0f }
+        { 43.0f, 74.0f, 40.0f, 40.0f },
+        { 103.0f, 70.0f, 40.0f, 40.0f },
+        { 163.0f, 74.0f, 40.0f, 40.0f }
 }; // Example: first 32x32 pixel frame
 
     InitWindow(screenWidth, screenHeight, "Nave Maluca - (C) 2025");
     Texture2D spriteSheet = LoadTexture("sprites.png");
 
-    SetTargetFPS(60);
-    loadMapTextFile("./Mapas/mapa03.txt", curr_map);
+    SetTargetFPS(FPS);
+    
 
 
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -70,33 +76,44 @@ int main(void){
         if(IsKeyDown(KEY_LEFT_SHIFT)) run = 3;
         else run=1;
         //pre drawing phase
-        if(IsKeyDown(KEY_D) && mapBounds.width >= navePos.x+TAMNAVE) {
+        
+        if((IsKeyDown(KEY_D)|| IsKeyDown(KEY_RIGHT))&& mapBounds.width >= navePos.x+TAMNAVE) {
             naveState = 2;
-            navePos.x += MOVSPEED * run;
+            naveVel.x += MOVSPEED * run;
             sideMovement = -1;
-        } else if(IsKeyDown(KEY_A) && mapBounds.x  <= navePos.x){
+        } else if((IsKeyDown(KEY_A)|| IsKeyDown(KEY_LEFT)) && mapBounds.x  <= navePos.x){
             naveState = 0;
-            navePos.x -= MOVSPEED * run;
+            naveVel.x -= MOVSPEED * run;
             sideMovement = 1;
         } else {
             naveState = 1;
             sideMovement = 0;
         }
         
-        if(IsKeyDown(KEY_S) && mapBounds.height >= navePos.y + TAMNAVE){
-            navePos.y += MOVSPEED * run;
+        if((IsKeyDown(KEY_S)|| IsKeyDown(KEY_DOWN)) && mapBounds.height >= navePos.y + TAMNAVE){
+            naveVel.y = MOVSPEED * run;
 
-        } else if (IsKeyDown(KEY_W) &&  mapBounds.y <= navePos.y){
-            navePos.y -= MOVSPEED * run;
+        } else if ((IsKeyDown(KEY_W)|| IsKeyDown(KEY_UP)) &&  mapBounds.y <= navePos.y){
+            naveVel.y = -MOVSPEED * run;
 
         }
+        
+        
+
+        naveVel = Vector2ClampValue(naveVel, MOVSPEED*run, MOVSPEED*run);
+        
+        hasCollided = testCollisionBad(navePos, naveVel, curr_map);
+
+        navePos = Vector2Add(navePos, hasCollided);
+        naveVel = Vector2Zero();
+        
         //drawing phase
         BeginDrawing();
             ClearBackground(LIGHTGRAY);
-            DrawMap(test_map, spriteSheet);
+            DrawMap(curr_map, spriteSheet);
             
             DrawTextureRec(spriteSheet, naveSprite[naveState], navePos,WHITE);
-            DrawText(TextFormat("%f, %f",navePos.x, mapBounds.x), 1, 1, 38, BLACK);
+            DrawText(TextFormat("%f",ParseStartPoint(curr_map).x) , 1, 1, 38, BLACK);
         EndDrawing();
     }
 
