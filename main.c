@@ -34,7 +34,7 @@ A ordem dos tratores ALTERA o viaduto!
 Alem disos, comentarios gerais:
 Funcoes pequenas serao pouquissimo comentadas (se comentadas), mas a depender
 de sua obviedade para o leitor, e, em varios outros casos, elas nao terao
-comentario inicial, apenas explicando o interior delas (quando a chaamada 
+comentario inicial, apenas explicando o interior delas (quando a chaamada
 for autoevidente, e.g. drawMenu)
 */
 
@@ -44,8 +44,7 @@ typedef struct
     Vector2 speed;
 } BALA;
 
-
-//Move as BALAs do array balas e colide-as com o mapa
+// Move as BALAs do array balas e colide-as com o mapa
 void moveBala(BALA balas[20], char curr_map[20][24])
 {
     int i;
@@ -53,14 +52,14 @@ void moveBala(BALA balas[20], char curr_map[20][24])
 
     for (i = 0; i < 20; i++)
     {
-        //ignora balas nulas
+        // ignora balas nulas
         if (balas[i].speed.y == 0)
             continue;
 
-        //testa colisao das balas
+        // testa colisao das balas
         resSpeed = testCollision(balas[i].hitbox, balas[i].speed, curr_map);
 
-        //se ela colidir ou sair do mapa, zera a bala.
+        // se ela colidir ou sair do mapa, zera a bala.
         if (!Vector2Equals(resSpeed, balas[i].speed) ||
             balas[i].hitbox.x + balas[i].speed.x <= 200)
         {
@@ -73,8 +72,8 @@ void moveBala(BALA balas[20], char curr_map[20][24])
     }
 }
 
-//testa se as BALAs atingem os postos de gasolina (e, caso atinjam, atualiza o mapa pra tirar o posto)
-//retorna a quantidade de gasolina que o player deve receber.
+// testa se as BALAs atingem os postos de gasolina (e, caso atinjam, atualiza o mapa pra tirar o posto)
+// retorna a quantidade de gasolina que o player deve receber.
 int testBulletGas(Rectangle postos[20], BALA balas[20], Sound posto_kabum, char curr_map[20][24])
 {
     int gasolina = 0, i, j, k;
@@ -84,21 +83,21 @@ int testBulletGas(Rectangle postos[20], BALA balas[20], Sound posto_kabum, char 
     {
         for (j = 0; j < 20; j++)
         {
-            //se bala ou posto sao nulas, ignora.
+            // se bala ou posto sao nulas, ignora.
             if (postos[i].height == 0)
                 continue;
             if (balas[i].hitbox.height == 0)
                 continue;
 
-            //corrige pro header.
+            // corrige pro header.
             thitbox = postos[i];
             thitbox.y += 40;
 
-            //se nao colide, pula
+            // se nao colide, pula
             if (!CheckCollisionRecs(thitbox, balas[j].hitbox))
                 continue;
 
-            //se colide, remove o posto do mapa, zera a bala e adiciona gasolina
+            // se colide, remove o posto do mapa, zera a bala e adiciona gasolina
             gasolina += 20;
             for (k = 0; k < 4; k++)
             {
@@ -112,19 +111,18 @@ int testBulletGas(Rectangle postos[20], BALA balas[20], Sound posto_kabum, char 
     return gasolina;
 }
 
-
-//testa se as balas atingem a(s) pontes. retorna o score a ser adicionado.
+// testa se as balas atingem a(s) pontes. retorna o score a ser adicionado.
 int testBulletBridge(char curr_map[20][24], BALA balas[20], Sound bridge_explosion)
 {
     int i, j, bridgecol, score = 0;
-    
+
     for (i = 0; i < 20; i++)
     {
-        //remove balas nulas
+        // remove balas nulas
         if (balas[i].speed.y == 0)
             continue;
 
-        //remove a ponte na alutra bridgecol (0-19)
+        // remove a ponte na alutra bridgecol (0-19)
         bridgecol = TestCollisionBridges(curr_map, balas[i].hitbox);
         if (bridgecol != -1)
         {
@@ -141,7 +139,7 @@ int testBulletBridge(char curr_map[20][24], BALA balas[20], Sound bridge_explosi
     return score;
 }
 
-//move todos os inimigos e, caso colidam, troca a velocidade no eixo X e Y
+// move todos os inimigos e, caso colidam, troca a velocidade no eixo X e Y
 void moveEnemies(ENEMY enemies[20], char curr_map[20][24])
 {
     int i;
@@ -162,14 +160,14 @@ void moveEnemies(ENEMY enemies[20], char curr_map[20][24])
     }
 }
 
-//checa se os inimigos colidiram com o hitbox Player, retorna qual dos inimigos a hitbox colidiu
+// checa se os inimigos colidiram com o hitbox Player, retorna qual dos inimigos a hitbox colidiu
 int checkEnemyCollision(ENEMY enemies[20], Rectangle player)
 {
     int i;
 
     for (i = 0; i < 20; i++)
     {
-        //pula inimigos nulos
+        // pula inimigos nulos
         if (enemies[i].points == 0)
             continue;
         if (CheckCollisionRecs(enemies[i].hitbox, player))
@@ -178,20 +176,42 @@ int checkEnemyCollision(ENEMY enemies[20], Rectangle player)
     return -1;
 }
 
-//loop principal, roda quando o player pressiona "jogar".
+// Desenha o menu de pausa na tela
+void drawMenuPausa(int option)
+{
+    BeginDrawing();
+    ClearBackground(BLACK);
+    DrawText("Deseja sair?", 300, 300, 50, WHITE);
+    DrawText("NAO", 400, 400, 40, WHITE);
+    if(!option)
+    {
+        DrawText("SIM", 400, 460, 40, WHITE);
+        DrawRectangle(350, 405, 30, 30, YELLOW);
+    }
+    else
+    {
+        DrawText("TEM CERTEZA? :c", 320, 460, 40, WHITE);
+        DrawRectangle(270, 465, 30, 30, YELLOW);
+    }
+    
+    EndDrawing();
+}
+
+// loop principal, roda quando o player pressiona "jogar".
 void levelLoop(Texture2D spriteSheet)
 {
 
-    //das variaveis nao auto_evidentes:
+    // das variaveis nao auto_evidentes:
     /*
     naveState - faz com que o sprite da nave mude
     frametimer - serve de estado global para coisas que rodam uma, duas ou mais vezes por segundo, mas nao rodam uma vez por frame
     contbala - quantas balas ja foram atiradas. reseta no 20.
     cflag - se o player deseja sair do mapa, forma de propagar o estado de saida para mais de um loop.
     restart - serve pra decidir se deve reiniciar o score/vidas/combustivel do player (pro inicio do nivel)
+    breakpausa - quebra o lock do menu de pausa
     */
-    int vidas = 3, combustivel = 100, nivel = 1, score = 0, naveState = 1, run = 1, i, frametimer = FPS, 
-        contbala, j, cflag = 0, hspos, old_vidas, old_combustivel, old_score, restart = 0;
+    int vidas = 3, combustivel = 100, nivel = 1, score = 0, naveState = 1, run = 1, i, frametimer = FPS,
+        contbala, j, cflag = 0, hspos, old_vidas, old_combustivel, old_score, restart = 0, breakpausa, opcao_pausa = 0;
 
     char curr_map[20][24];
     BALA balas[20] = {0};
@@ -205,8 +225,8 @@ void levelLoop(Texture2D spriteSheet)
 
     Vector2 naveVel = {0, 0};
     Vector2 navePos;
-    
-    //contem o vetor de velocidade resultante para nao colidir com a parede (ir ate ela, mas nao mais)
+
+    // contem o vetor de velocidade resultante para nao colidir com a parede (ir ate ela, mas nao mais)
     Vector2 hasCollided;
 
     Rectangle mapBounds = {0.0f, 40.0f, 960.0f, 840.0f};
@@ -214,26 +234,26 @@ void levelLoop(Texture2D spriteSheet)
     Rectangle naveSprite[] = {
         {43.0f, 74.0f, 40.0f, 40.0f},
         {103.0f, 70.0f, 40.0f, 40.0f},
-        {163.0f, 74.0f, 40.0f, 40.0f}
-    };
-
+        {163.0f, 74.0f, 40.0f, 40.0f}};
 
     while (cflag != 1 && nivel < 6)
-    {   
-        //se o player reinicia, reseta as variaveis pras do inicio do ultimo nivel.
-        if(restart){
+    {
+        // se o player reinicia, reseta as variaveis pras do inicio do ultimo nivel.
+        if (restart)
+        {
             score = old_score;
             combustivel = old_combustivel;
             vidas = old_vidas;
             restart = 0;
         }
-        else{
+        else
+        {
             old_score = score;
             old_combustivel = combustivel;
             old_vidas = vidas;
         }
 
-        //zera os inimigos, postos e balas.
+        // zera os inimigos, postos e balas.
         for (i = 0; i < 20; i++)
         {
             balas[i] = (BALA){{0, 0, 0, 0}, {0, 0}};
@@ -242,13 +262,12 @@ void levelLoop(Texture2D spriteSheet)
         }
         contbala = 0;
 
-        //Carrega mapas, inimigos, postos e posicao da nave.
+        // Carrega mapas, inimigos, postos e posicao da nave.
         loadMapTextFile(TextFormat("./Mapas/mapa%02d.txt", nivel), curr_map);
         parseEnemies(enemies, curr_map);
         parsePostos(postos, curr_map);
         navePos = ParseStartPoint(curr_map);
-        
-        
+
         while (cflag != 1 && navePos.y > 40)
         {
 
@@ -264,7 +283,7 @@ void levelLoop(Texture2D spriteSheet)
                 combustivel--;
             }
 
-            //se alguma das balas colidir com um inimigo, zera ele e a bala e adiciona ao score
+            // se alguma das balas colidir com um inimigo, zera ele e a bala e adiciona ao score
             for (i = 0; i < 20; i++)
             {
                 j = checkEnemyCollision(enemies, balas[i].hitbox);
@@ -277,13 +296,13 @@ void levelLoop(Texture2D spriteSheet)
                 }
             }
 
-            //colisao com pontes
+            // colisao com pontes
             score += testBulletBridge(curr_map, balas, bridge_explosion);
 
-
-            //colisao com postos e clamp do valor do combustivel
+            // colisao com postos e clamp do valor do combustivel
             combustivel += testBulletGas(postos, balas, bridge_explosion, curr_map);
-            if(combustivel > 100) combustivel = 100;
+            if (combustivel > 100)
+                combustivel = 100;
 
             // mata o player se ele colide com os inimigos
             if (checkEnemyCollision(enemies, (Rectangle){navePos.x, navePos.y, 40, 40}) != -1)
@@ -318,7 +337,6 @@ void levelLoop(Texture2D spriteSheet)
                 naveVel.y = -MOVSPEED * run;
             }
 
-
             // atira
             if (IsKeyPressed(KEY_K) || IsKeyPressed(KEY_SPACE))
             {
@@ -342,92 +360,119 @@ void levelLoop(Texture2D spriteSheet)
             navePos = Vector2Add(navePos, hasCollided);
             naveVel = Vector2Zero();
 
-
             // reseta o frametimer
             if (frametimer <= 0)
                 frametimer = FPS;
             frametimer--;
 
-            //move os inimigos
+            // move os inimigos
             moveEnemies(enemies, curr_map);
-
 
             // codigo que desenha na tela
             BeginDrawing();
-                //desenha mapa e background
-                ClearBackground(LIGHTGRAY);
-                DrawMap(curr_map, spriteSheet);
+            // desenha mapa e background
+            ClearBackground(LIGHTGRAY);
+            DrawMap(curr_map, spriteSheet);
 
-                //desenha nave
-                DrawTextureRec(spriteSheet, naveSprite[naveState], navePos, WHITE);
+            // desenha nave
+            DrawTextureRec(spriteSheet, naveSprite[naveState], navePos, WHITE);
 
-
-                
-                for (i = 0; i < 20; i++)
+            for (i = 0; i < 20; i++)
+            {
+                // desenha inimigos
+                if (enemies[i].points == 30)
                 {
-                    // desenha inimigos
-                    if (enemies[i].points == 30)
+                    // gira a helice do helicoptero
+                    if (frametimer <= 30)
                     {
-                        // gira a helice do helicoptero
-                        if (frametimer <= 30)
-                        {
-                            DrawTextureRec(spriteSheet, (Rectangle){83, 186, 40, 25}, (Vector2){enemies[i].hitbox.x, enemies[i].hitbox.y}, WHITE);
-                        }
-                        else
-                            DrawTextureRec(spriteSheet, enemies[i].sprite, (Vector2){enemies[i].hitbox.x, enemies[i].hitbox.y}, WHITE);
+                        DrawTextureRec(spriteSheet, (Rectangle){83, 186, 40, 25}, (Vector2){enemies[i].hitbox.x, enemies[i].hitbox.y}, WHITE);
                     }
-                    else if (enemies[i].points != 0)
-                    {
-                        //desenha o resto dos inimigos (nesse caso, so navios)
-                        DrawTexturePro(spriteSheet, enemies[i].sprite, enemies[i].hitbox, (Vector2){0, 0}, 0, WHITE);
-                    }
-
-                    // desenha balas
-                    if (balas[i].speed.y != 0)
-                    {
-                        DrawRectangleRec(balas[i].hitbox, YELLOW);
-                    }
+                    else
+                        DrawTextureRec(spriteSheet, enemies[i].sprite, (Vector2){enemies[i].hitbox.x, enemies[i].hitbox.y}, WHITE);
+                }
+                else if (enemies[i].points != 0)
+                {
+                    // desenha o resto dos inimigos (nesse caso, so navios)
+                    DrawTexturePro(spriteSheet, enemies[i].sprite, enemies[i].hitbox, (Vector2){0, 0}, 0, WHITE);
                 }
 
-                //desenha pontes
-                DrawMapBridges(curr_map, spriteSheet);
+                // desenha balas
+                if (balas[i].speed.y != 0)
+                {
+                    DrawRectangleRec(balas[i].hitbox, YELLOW);
+                }
+            }
 
-                //desenha interface
-                DrawText(TextFormat("Vidas: %d  Score: %d  Combustivel: %d  %f", vidas, score, combustivel, navePos.y), 1, 1, 38, BLACK);
+            // desenha pontes
+            DrawMapBridges(curr_map, spriteSheet);
+
+            // desenha interface
+            DrawText(TextFormat("Vidas: %d  Score: %d  Combustivel: %d  %f", vidas, score, combustivel, navePos.y), 1, 1, 38, BLACK);
             EndDrawing();
 
-            //caso a nave tenha ultrapassado a linha pro proximo nivel, passa de nivel
+            // caso a nave tenha ultrapassado a linha pro proximo nivel, passa de nivel
             if (navePos.y <= 40)
             {
                 nivel++;
             }
 
+            if (WindowShouldClose() || IsKeyPressed(KEY_P))
+            {
+                breakpausa = 0;
+                opcao_pausa = 0;
+                while (!breakpausa)
+                {
+                    drawMenuPausa(opcao_pausa);
+                    if ((IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) && opcao_pausa < 1)
+                    {
+                        opcao_pausa++;
+                    }
+                    if ((IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) && opcao_pausa > 0)
+                    {
+                        opcao_pausa--;
+                    }
+                    if(IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)){
+                        if(opcao_pausa){
+                            breakpausa = 1;
+                            cflag = 1;
+                        }
+                        else
+                            breakpausa = 1;
+                    }
+                    if(WindowShouldClose()){
+                        breakpausa = 1;
+                    }
+                }
+            }
+
             // forca reset (sem aumentar o nivel e mantendo score/gasolina/etc)
-            if (IsKeyPressed(KEY_R)){
+            if (IsKeyPressed(KEY_R))
+            {
                 navePos.y = -40;
                 restart = 1;
             }
 
-            //passa pro highscore se o usuario aperta esc, acaba o combustivel ou vidas
-            if (WindowShouldClose() || combustivel <= 0 || vidas < 0)
+            // passa pro highscore se o usuario aperta esc, acaba o combustivel ou vidas
+            if (combustivel <= 0 || vidas < 0)
             {
                 cflag = 1;
             }
         }
     }
 
-    //insere o highscore na posicao hspos
-    hspos=isHighScore(score);
-    if(hspos!=-1){
+    // insere o highscore na posicao hspos
+    hspos = isHighScore(score);
+    if (hspos != -1)
+    {
         hs = getHighScore(score);
-        if(hs.pontos==score){
+        if (hs.pontos == score)
+        {
             insertNewScore(hs, hspos);
-        } 
+        }
     }
 }
 
-
-//desenha o menu de opcoes
+// desenha o menu de opcoes
 void drawMenu(int option)
 {
 
@@ -440,7 +485,6 @@ void drawMenu(int option)
     EndDrawing();
 }
 
-
 int main(void)
 {
 
@@ -450,14 +494,13 @@ int main(void)
     SetTargetFPS(FPS);
     InitAudioDevice();
 
-    //carrega sprites e inicializa variaveis
+    // carrega sprites e inicializa variaveis
     Texture2D spriteSheet = LoadTexture("sprites.png");
     int menuPos = 0;
-    
 
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
-        //codigo de logica do menu   
+        // codigo de logica do menu
         if (IsKeyPressed(KEY_ENTER))
         {
             switch (menuPos)
@@ -474,7 +517,7 @@ int main(void)
             }
         }
 
-        //movimentacao dentro do menu
+        // movimentacao dentro do menu
         if ((IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) && menuPos < 2)
         {
             menuPos++;
@@ -487,7 +530,7 @@ int main(void)
         drawMenu(menuPos);
     }
 
-    //de-inicializa audio e video
+    // de-inicializa audio e video
     CloseAudioDevice();
     CloseWindow();
 
