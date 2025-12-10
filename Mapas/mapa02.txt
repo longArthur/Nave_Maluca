@@ -1,0 +1,22 @@
+TTTTTTTTT       TTTTTTTT
+TTTTTTTT   X      TTTTTT
+TTTTTTT            TTTTT
+TTTTTT             TTTTT
+TTTTTT         X   TTTTT
+TTTTTTT            TTTTT
+TTTTTTTT         TTTTTTT
+TTTT            TTTTTTTT
+TTTT        T    TTTTTTT
+TTTT        TTT   TTTTTT
+TTTT     X TTATTT  TTTTT
+TTTT      TTT TTT   TTTT
+TTTT        T TT     TTT
+TTTT              X TTTT
+TTTT                TTTT
+TTTT        X       TTTT
+TTTT                TTTT
+TTTT               TTTTT
+TTTT             TTTTTTT
+TTTTTTTTTTTTTTTTTTTTTTTT
+
+
